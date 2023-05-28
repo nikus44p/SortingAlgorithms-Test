@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ConsoleApp13
 {
@@ -11,57 +9,122 @@ namespace ConsoleApp13
     {
         static void Main(string[] args)
         {
-            Console.Write("Podaj liczbę elementów do sortowania: ");
-            int n = Int32.Parse(Console.ReadLine());
+            int[] testSizes = new int[] { 1000, 10000, 100000 };
+            string[] algorithmNames = { "Sortowanie bąbelkowe", "Sortowanie przez wybieranie", "Sortowanie przez scalanie", "Sortowanie szybkie","Sortowanie bąbelkowe" };
+            string[] dataTypes = { "Losowe", "Rosnące", "Malejące", "Kształt V", "Kształt A", "Stałe" };
 
-            int[] array = new int[n];
-            Random rand = new Random();
-            for (int i = 0; i < n; i++)
+            Console.WriteLine("Wybierz algorytm do przetestowania:");
+            Console.WriteLine("1 - Sortowanie bąbelkowe");
+            Console.WriteLine("2 - Sortowanie przez wybieranie");
+            Console.WriteLine("3 - Sortowanie przez scalanie");
+            Console.WriteLine("4 - Sortowanie szybkie");
+            Console.WriteLine("5 - Sortowanie kubełkowe");
+            Console.Write("Twój wybór: ");
+            int algorithmType = int.Parse(Console.ReadLine());
+            if (algorithmType < 1 || algorithmType > 5)
             {
-                array[i] = rand.Next(0, 101);
+                Console.WriteLine("Nieprawidłowy wybór. Wybierz liczbę od 1 do 5.");
+                return;
             }
 
-            Console.WriteLine("Wybierz algorytm sortowania (1 - bąbelkowe, 2 - przez wybieranie, 3 - przez scalanie, 4 - szybkie, 5 - kubełkowe): ");
-            int choice = Int32.Parse(Console.ReadLine());
-
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
-
-            switch (choice)
+            for (int dataType = 1; dataType <= 6; dataType++)
             {
-                case 1:
-                    BubbleSort(array);
-                    break;
-                case 2:
-                    SelectionSort(array);
-                    break;
-                case 3:
-                    MergeSort(array, 0, array.Length - 1);
-                    break;
-                case 4:
-                    QuickSort(array, 0, array.Length - 1);
-                    break;
-                case 5:
-                    float[] floatArray = Array.ConvertAll(array, x => (float)x / 100);
-                    BucketSort(floatArray, floatArray.Length);
-                    array = Array.ConvertAll(floatArray, x => (int)(x * 100));
-                    break;
-                default:
-                    Console.WriteLine("Niepoprawny wybór.");
-                    break;
-            }
+                foreach (var n in testSizes)
+                {
+                    for (int iteration = 0; iteration < 1; iteration++)
+                    {
+                        int[] array = GenerateData(n, dataType);
 
-            stopwatch.Stop();
-            Console.WriteLine($"Czas sortowania: {stopwatch.ElapsedMilliseconds} ms");
+                        Stopwatch stopwatch = new Stopwatch();
+                        stopwatch.Start();
 
-            Console.WriteLine("Posortowane elementy: ");
-            foreach (var item in array)
-            {
-                Console.Write(item + " ");
+                        switch (algorithmType)
+                        {
+                            case 1:
+                                BubbleSort(array);
+                                break;
+                            case 2:
+                                SelectionSort(array);
+                                break;
+                            case 3:
+                                MergeSort(array, 0, array.Length - 1);
+                                break;
+                            case 4:
+                                QuickSort(array, 0, array.Length - 1);
+                                break;
+                            case 5:
+                                BucketSort(array);
+                                break;
+
+                        }
+
+                        stopwatch.Stop();
+                        Console.WriteLine($"Algorytm: {algorithmNames[algorithmType - 1]}, Typ danych: {dataTypes[dataType - 1]}, Rozmiar danych: {n}, Iteracja: {iteration + 1}, Czas sortowania: {stopwatch.ElapsedMilliseconds} ms");
+
+                        array = null;
+                        GC.Collect();
+                        GC.WaitForPendingFinalizers();
+                    }
+                }
             }
-            Console.WriteLine();
         }
-    
+
+        static int[] GenerateData(int n, int dataType)
+        {
+            int[] array = new int[n];
+            switch (dataType)
+            {
+                case 1: // Losowe
+                    Random rand = new Random();
+                    for (int i = 0; i < n; i++)
+                    {
+                        array[i] = rand.Next(0, 100);
+                    }
+                    break;
+                case 2: // Wzrastające 
+                    for (int i = 0; i < n; i++)
+                    {
+                        array[i] = i;
+                    }
+                    break;
+                case 3: // Malejące 
+                    for (int i = 0; i < n; i++)
+                    {
+                        array[i] = n - i - 1;
+                    }
+                    break;
+                case 4: // V-kształtne
+                    int middle = n / 2;
+                    for (int i = 0; i < middle; i++)
+                    {
+                        array[i] = middle - i;
+                    }
+                    for (int i = middle; i < n; i++)
+                    {
+                        array[i] = i - middle;
+                    }
+                    break;
+                case 5: // A-kształtne
+                    middle = n / 2;
+                    for (int i = 0; i < middle; i++)
+                    {
+                        array[i] = i;
+                    }
+                    for (int i = middle; i < n; i++)
+                    {
+                        array[i] = n - i - 1;
+                    }
+                    break;
+                case 6: // Stałe
+                    for (int i = 0; i < n; i++)
+                    {
+                        array[i] = 1;
+                    }
+                    break;
+            }
+
+            return array;
+        }
 
         static void BubbleSort(int[] array)
         {
@@ -80,6 +143,7 @@ namespace ConsoleApp13
                 }
             }
         }
+
         static void SelectionSort(int[] array)
         {
             int length = array.Length;
@@ -99,6 +163,7 @@ namespace ConsoleApp13
                 array[minIndex] = temp;
             }
         }
+
         static void MergeSort(int[] array, int left, int right)
         {
             if (left < right)
@@ -146,69 +211,82 @@ namespace ConsoleApp13
                 }
             }
         }
+
         static void QuickSort(int[] array, int low, int high)
         {
-            if (low < high)
+            while (low < high)
             {
-                int pivot = Partition(array, low, high);
+                int pi = Partition(array, low, high);
 
-                QuickSort(array, low, pivot - 1);
-                QuickSort(array, pivot + 1, high);
+                if (pi - low < high - pi)
+                {
+                    QuickSort(array, low, pi - 1);
+                    low = pi + 1;
+                }
+                else
+                {
+                    QuickSort(array, pi + 1, high);
+                    high = pi - 1;
+                }
             }
         }
 
+
         static int Partition(int[] array, int low, int high)
         {
-            int pivot = array[high];
-            int i = low - 1;
+            int mid = low + ((high - low) / 2);
+            int medianOfThree = array[new[] { low, mid, high }.OrderBy(x => array[x]).ElementAt(1)];
+            int pivotIndex = Array.IndexOf(array, medianOfThree);
+            int pivot = array[pivotIndex];
+            int temp1 = array[pivotIndex];
+            array[pivotIndex] = array[high];
+            array[high] = temp1;
+
+            int i = (low - 1);
 
             for (int j = low; j <= high - 1; j++)
             {
                 if (array[j] < pivot)
                 {
                     i++;
-                    Swap(ref array[i], ref array[j]);
+                    int temp = array[i];
+                    array[i] = array[j];
+                    array[j] = temp;
                 }
             }
-            Swap(ref array[i + 1], ref array[high]);
+            temp1 = array[i + 1];
+            array[i + 1] = array[high];
+            array[high] = temp1;
             return (i + 1);
         }
-
-        static void Swap(ref int a, ref int b)
+        static void BucketSort(int[] array)
         {
-            int t = a;
-            a = b;
-            b = t;
-        }
-        static void BucketSort(float[] array, int n)
-        {
-            if (n <= 0)
-                return;
+            int maxValue = array.Max();
+            int minValue = array.Min();
+            List<int>[] bucket = new List<int>[maxValue - minValue + 1];
 
-            List<float>[] buckets = new List<float>[n];
-
-            for (int i = 0; i < n; i++)
+            for (int i = 0; i < bucket.Length; i++)
             {
-                buckets[i] = new List<float>();
+                bucket[i] = new List<int>();
             }
 
-            for (int i = 0; i < n; i++)
+            for (int i = 0; i < array.Length; i++)
             {
-                int bucketIndex = (int)(array[i] * n);
-                buckets[bucketIndex].Add(array[i]);
+                bucket[array[i] - minValue].Add(array[i]);
             }
 
-            for (int i = 0; i < n; i++)
+            int position = 0;
+            for (int i = 0; i < bucket.Length; i++)
             {
-                buckets[i].Sort();
-            }
-
-            int index = 0;
-            for (int i = 0; i < n; i++)
-            {
-                for (int j = 0; j < buckets[i].Count; j++)
+                if (bucket[i].Count <= 0)
                 {
-                    array[index++] = buckets[i][j];
+                    continue;
+                }
+
+                for (int j = 0; j < bucket[i].Count; j++)
+                {
+                    array[position] = bucket[i][j];
+                    position++;
                 }
             }
         }
